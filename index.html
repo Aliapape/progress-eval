@@ -1,10 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="ar">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Progress Evaluation Tool</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <title>أداة تقييم بيئة مستدامة</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -32,6 +32,27 @@
       flex-direction: column;
       justify-content: center;
       align-items: center;
+      position: relative;
+    }
+    .image-container {
+      position: relative;
+      width: 300px;
+      height: 300px;
+      background-image: url('sustainable_environment.png');
+      background-size: cover;
+      background-position: center;
+      border-radius: 15px;
+      overflow: hidden;
+      box-shadow: 0 0 15px rgba(0,0,0,0.2);
+    }
+    .image-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(200,200,200,0.7);
+      transition: height 0.5s ease;
     }
     .section {
       background-color: #fff;
@@ -48,84 +69,45 @@
       display: block;
       margin: 8px 0;
     }
-    .progress-bar-container {
-      width: 100%;
-      max-width: 400px;
-      background-color: #ddd;
-      border-radius: 30px;
-      overflow: hidden;
-      margin-bottom: 20px;
-    }
-    .progress-bar {
-      height: 40px;
-      width: 0;
-      background-color: red;
-      text-align: center;
-      line-height: 40px;
-      color: white;
-      font-weight: bold;
-      transition: width 0.5s ease;
-    }
     .result-text {
       font-size: 24px;
       font-weight: bold;
-    }
-    .button-group {
       margin-top: 20px;
-      display: flex;
-      gap: 15px;
     }
-    button {
-      padding: 10px 15px;
-      font-size: 16px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    .reset-btn { background-color: #dc3545; color: white; }
-    .pdf-btn { background-color: #28a745; color: white; }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="form-section">
-      <h2>أداة تقييم تقدم العمل</h2>
+      <h2>أداة تقييم بيئة مستدامة</h2>
       <form id="evaluationForm">
         <div class="section">
           <h3>المرحلة الأولى</h3>
           <label><input type="radio" name="step1" value="5" onchange="calculateScore()"> نعم</label>
           <label><input type="radio" name="step1" value="1" onchange="calculateScore()"> لا</label>
         </div>
-
         <div class="section">
           <h3>المرحلة الثانية (نسبة الإنجاز)</h3>
           <label><input type="radio" name="step2" value="1" onchange="calculateScore()"> أقل من 50%</label>
           <label><input type="radio" name="step2" value="3" onchange="calculateScore()"> 70%</label>
           <label><input type="radio" name="step2" value="5" onchange="calculateScore()"> 100%</label>
         </div>
-
         <div class="section">
           <h3>المرحلة الثالثة</h3>
           <label><input type="radio" name="step3" value="5" onchange="calculateScore()"> نعم</label>
           <label><input type="radio" name="step3" value="1" onchange="calculateScore()"> لا</label>
         </div>
-
         <div class="section">
           <h3>المرحلة الرابعة</h3>
           <label><input type="radio" name="step4" value="5" onchange="calculateScore()"> نعم</label>
           <label><input type="radio" name="step4" value="1" onchange="calculateScore()"> لا</label>
         </div>
       </form>
-
-      <div class="button-group">
-        <button class="reset-btn" onclick="resetForm()">إعادة التقييم</button>
-        <button class="pdf-btn" onclick="downloadPDF()">تحميل النتيجة PDF</button>
-      </div>
     </div>
 
     <div class="progress-section">
-      <div class="progress-bar-container">
-        <div id="progressBar" class="progress-bar">0%</div>
+      <div class="image-container">
+        <div id="imageOverlay" class="image-overlay"></div>
       </div>
       <div id="result" class="result-text">النتيجة: 0 من 20</div>
     </div>
@@ -142,63 +124,11 @@
 
       const total = values.reduce((a, b) => a + b, 0);
       const percent = Math.round((total / 20) * 100);
+      const overlay = document.getElementById("imageOverlay");
 
-      const progressBar = document.getElementById("progressBar");
-      progressBar.style.width = percent + "%";
-      progressBar.textContent = percent + "%";
-
-      if (percent < 40) {
-        progressBar.style.backgroundColor = "red";
-      } else if (percent < 80) {
-        progressBar.style.backgroundColor = "orange";
-      } else {
-        progressBar.style.backgroundColor = "green";
-      }
+      overlay.style.height = (100 - percent) + "%";
 
       document.getElementById("result").textContent = `النتيجة: ${total} من 20`;
-    }
-
-    function resetForm() {
-      document.getElementById("evaluationForm").reset();
-      document.getElementById("progressBar").style.width = "0%";
-      document.getElementById("progressBar").textContent = "0%";
-      document.getElementById("progressBar").style.backgroundColor = "red";
-      document.getElementById("result").textContent = "النتيجة: 0 من 20";
-    }
-
-    async function downloadPDF() {
-      if (!window.jspdf || !window.jspdf.jsPDF) {
-        alert("فشل تحميل مكتبة PDF. تأكد من اتصالك بالإنترنت.");
-        return;
-      }
-
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-      const form = document.forms["evaluationForm"];
-
-      doc.setFontSize(16);
-      doc.text("نتيجة تقييم تقدم العمل", 20, 20);
-
-      let y = 30;
-      const questions = [
-        { name: "المرحلة الأولى", field: "step1" },
-        { name: "المرحلة الثانية (نسبة الإنجاز)", field: "step2" },
-        { name: "المرحلة الثالثة", field: "step3" },
-        { name: "المرحلة الرابعة", field: "step4" },
-      ];
-
-      questions.forEach(q => {
-        const radios = form[q.field];
-        const selected = Array.from(radios).find(r => r.checked);
-        const answer = selected ? selected.nextSibling.textContent.trim() : "لم يتم الاختيار";
-        doc.text(`${q.name}: ${answer}`, 20, y);
-        y += 10;
-      });
-
-      const resultText = document.getElementById("result").textContent;
-      doc.text(resultText, 20, y + 10);
-
-      doc.save("تقرير_التقييم.pdf");
     }
   </script>
 </body>
