@@ -1,10 +1,11 @@
 
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>أداة تقييم بيئة مستدامة</title>
+  <title>Sustainability Progress Tool</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -12,7 +13,6 @@
       padding: 0;
       display: flex;
       height: 100vh;
-      direction: rtl;
     }
     .container {
       display: flex;
@@ -38,7 +38,7 @@
       position: relative;
       width: 300px;
       height: 300px;
-      background-image: url('sustainable_environment.png');
+      background-image: url('environment_progress.png');
       background-size: cover;
       background-position: center;
       border-radius: 15px;
@@ -74,42 +74,61 @@
       font-weight: bold;
       margin-top: 20px;
     }
+    .button-group {
+      margin-top: 20px;
+      display: flex;
+      gap: 15px;
+    }
+    button {
+      padding: 10px 15px;
+      font-size: 16px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .reset-btn { background-color: #dc3545; color: white; }
+    .pdf-btn { background-color: #28a745; color: white; }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="form-section">
-      <h2>أداة تقييم بيئة مستدامة</h2>
+      <h2>Sustainability Progress Evaluation</h2>
       <form id="evaluationForm">
         <div class="section">
-          <h3>المرحلة الأولى</h3>
-          <label><input type="radio" name="step1" value="5" onchange="calculateScore()"> نعم</label>
-          <label><input type="radio" name="step1" value="1" onchange="calculateScore()"> لا</label>
+          <h3>Stage 1</h3>
+          <label><input type="radio" name="step1" value="5" onchange="calculateScore()"> Yes</label>
+          <label><input type="radio" name="step1" value="1" onchange="calculateScore()"> No</label>
         </div>
         <div class="section">
-          <h3>المرحلة الثانية (نسبة الإنجاز)</h3>
-          <label><input type="radio" name="step2" value="1" onchange="calculateScore()"> أقل من 50%</label>
+          <h3>Stage 2 (Progress Percentage)</h3>
+          <label><input type="radio" name="step2" value="1" onchange="calculateScore()"> Less than 50%</label>
           <label><input type="radio" name="step2" value="3" onchange="calculateScore()"> 70%</label>
           <label><input type="radio" name="step2" value="5" onchange="calculateScore()"> 100%</label>
         </div>
         <div class="section">
-          <h3>المرحلة الثالثة</h3>
-          <label><input type="radio" name="step3" value="5" onchange="calculateScore()"> نعم</label>
-          <label><input type="radio" name="step3" value="1" onchange="calculateScore()"> لا</label>
+          <h3>Stage 3</h3>
+          <label><input type="radio" name="step3" value="5" onchange="calculateScore()"> Yes</label>
+          <label><input type="radio" name="step3" value="1" onchange="calculateScore()"> No</label>
         </div>
         <div class="section">
-          <h3>المرحلة الرابعة</h3>
-          <label><input type="radio" name="step4" value="5" onchange="calculateScore()"> نعم</label>
-          <label><input type="radio" name="step4" value="1" onchange="calculateScore()"> لا</label>
+          <h3>Stage 4</h3>
+          <label><input type="radio" name="step4" value="5" onchange="calculateScore()"> Yes</label>
+          <label><input type="radio" name="step4" value="1" onchange="calculateScore()"> No</label>
         </div>
       </form>
+
+      <div class="button-group">
+        <button class="reset-btn" onclick="resetForm()">Reset</button>
+        <button class="pdf-btn" onclick="downloadPDF()">Download PDF</button>
+      </div>
     </div>
 
     <div class="progress-section">
       <div class="image-container">
         <div id="imageOverlay" class="image-overlay"></div>
       </div>
-      <div id="result" class="result-text">النتيجة: 0 من 20</div>
+      <div id="result" class="result-text">Score: 0 out of 20</div>
     </div>
   </div>
 
@@ -128,7 +147,49 @@
 
       overlay.style.height = (100 - percent) + "%";
 
-      document.getElementById("result").textContent = `النتيجة: ${total} من 20`;
+      document.getElementById("result").textContent = `Score: ${total} out of 20`;
+    }
+
+    function resetForm() {
+      document.getElementById("evaluationForm").reset();
+      const overlay = document.getElementById("imageOverlay");
+      overlay.style.height = "100%";
+      document.getElementById("result").textContent = "Score: 0 out of 20";
+    }
+
+    async function downloadPDF() {
+      if (!window.jspdf || !window.jspdf.jsPDF) {
+        alert("PDF library failed to load. Please check your connection.");
+        return;
+      }
+
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      const form = document.forms["evaluationForm"];
+
+      doc.setFontSize(16);
+      doc.text("Sustainability Progress Report", 20, 20);
+
+      let y = 30;
+      const questions = [
+        { name: "Stage 1", field: "step1" },
+        { name: "Stage 2 (Progress Percentage)", field: "step2" },
+        { name: "Stage 3", field: "step3" },
+        { name: "Stage 4", field: "step4" },
+      ];
+
+      questions.forEach(q => {
+        const radios = form[q.field];
+        const selected = Array.from(radios).find(r => r.checked);
+        const answer = selected ? selected.nextSibling.textContent.trim() : "Not selected";
+        doc.text(`${q.name}: ${answer}`, 20, y);
+        y += 10;
+      });
+
+      const resultText = document.getElementById("result").textContent;
+      doc.text(resultText, 20, y + 10);
+
+      doc.save("sustainability_report.pdf");
     }
   </script>
 </body>
