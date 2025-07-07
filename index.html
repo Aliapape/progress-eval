@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,6 +12,7 @@
       padding: 0;
       display: flex;
       height: 100vh;
+      direction: rtl;
     }
     .container {
       display: flex;
@@ -42,6 +43,10 @@
     .section h3 {
       margin-top: 0;
       color: #333;
+    }
+    .section label {
+      display: block;
+      margin: 8px 0;
     }
     .progress-bar-container {
       width: 100%;
@@ -88,26 +93,26 @@
       <form id="evaluationForm">
         <div class="section">
           <h3>المرحلة الأولى</h3>
-          <label><input type="radio" name="step1" value="5" required onchange="calculateScore()"> نعم</label>
+          <label><input type="radio" name="step1" value="5" onchange="calculateScore()"> نعم</label>
           <label><input type="radio" name="step1" value="1" onchange="calculateScore()"> لا</label>
         </div>
 
         <div class="section">
           <h3>المرحلة الثانية (نسبة الإنجاز)</h3>
-          <label><input type="radio" name="step2" value="1" required onchange="calculateScore()"> أقل من 50%</label><br>
-          <label><input type="radio" name="step2" value="3" onchange="calculateScore()"> 70%</label><br>
+          <label><input type="radio" name="step2" value="1" onchange="calculateScore()"> أقل من 50%</label>
+          <label><input type="radio" name="step2" value="3" onchange="calculateScore()"> 70%</label>
           <label><input type="radio" name="step2" value="5" onchange="calculateScore()"> 100%</label>
         </div>
 
         <div class="section">
           <h3>المرحلة الثالثة</h3>
-          <label><input type="radio" name="step3" value="5" required onchange="calculateScore()"> نعم</label>
+          <label><input type="radio" name="step3" value="5" onchange="calculateScore()"> نعم</label>
           <label><input type="radio" name="step3" value="1" onchange="calculateScore()"> لا</label>
         </div>
 
         <div class="section">
           <h3>المرحلة الرابعة</h3>
-          <label><input type="radio" name="step4" value="5" required onchange="calculateScore()"> نعم</label>
+          <label><input type="radio" name="step4" value="5" onchange="calculateScore()"> نعم</label>
           <label><input type="radio" name="step4" value="1" onchange="calculateScore()"> لا</label>
         </div>
       </form>
@@ -131,7 +136,8 @@
       const form = document.forms["evaluationForm"];
       const values = ["step1", "step2", "step3", "step4"].map(name => {
         const selected = form[name];
-        return selected && selected.value ? parseInt(selected.value) : 0;
+        const checked = Array.from(selected).find(r => r.checked);
+        return checked ? parseInt(checked.value) : 0;
       });
 
       const total = values.reduce((a, b) => a + b, 0);
@@ -161,6 +167,11 @@
     }
 
     async function downloadPDF() {
+      if (!window.jspdf || !window.jspdf.jsPDF) {
+        alert("فشل تحميل مكتبة PDF. تأكد من اتصالك بالإنترنت.");
+        return;
+      }
+
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
       const form = document.forms["evaluationForm"];
@@ -177,9 +188,10 @@
       ];
 
       questions.forEach(q => {
-        const selected = form[q.field].value;
-        const label = form[q.field].parentElement.innerText;
-        doc.text(`${q.name}: ${selected ? selected : "لم يتم الاختيار"}`, 20, y);
+        const radios = form[q.field];
+        const selected = Array.from(radios).find(r => r.checked);
+        const answer = selected ? selected.nextSibling.textContent.trim() : "لم يتم الاختيار";
+        doc.text(`${q.name}: ${answer}`, 20, y);
         y += 10;
       });
 
