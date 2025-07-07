@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Progress Evaluation Tool</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      max-width: 600px;
+      margin: auto;
+    }
+    .section {
+      margin-bottom: 20px;
+    }
+    .result {
+      font-size: 1.5em;
+      font-weight: bold;
+      margin-top: 20px;
+    }
+    .school {
+      font-size: 60px;
+      text-align: center;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h2>Progress Evaluation Tool</h2>
+  <form id="evaluationForm">
+    <div class="section">
+      <label>المرحلة الأولى:</label><br>
+      <label><input type="radio" name="step1" value="5" required> نعم</label>
+      <label><input type="radio" name="step1" value="1"> لا</label>
+    </div>
+
+    <div class="section">
+      <label>المرحلة الثانية (نسبة الإنجاز):</label><br>
+      <label><input type="radio" name="step2" value="1" required> أقل من 50%</label><br>
+      <label><input type="radio" name="step2" value="3"> 70%</label><br>
+      <label><input type="radio" name="step2" value="5"> 100%</label>
+    </div>
+
+    <div class="section">
+      <label>المرحلة الثالثة:</label><br>
+      <label><input type="radio" name="step3" value="5" required> نعم</label>
+      <label><input type="radio" name="step3" value="1"> لا</label>
+    </div>
+
+    <div class="section">
+      <label>المرحلة الرابعة:</label><br>
+      <label><input type="radio" name="step4" value="5" required> نعم</label>
+      <label><input type="radio" name="step4" value="1"> لا</label>
+    </div>
+
+    <button type="button" onclick="calculateScore()">احسب النتيجة</button>
+  </form>
+
+  <div id="result" class="result"></div>
+  <div id="school" class="school"></div>
+
+  <script>
+    function calculateScore() {
+      const form = document.forms["evaluationForm"];
+      const total = ["step1", "step2", "step3", "step4"].reduce((sum, name) => {
+        return sum + parseInt(form[name].value);
+      }, 0);
+
+      document.getElementById("result").textContent = `النتيجة: ${total} من 20`;
+
+      const school = document.getElementById("school");
+      if (total >= 16) {
+        school.textContent = "🏫"; // ممتاز
+        school.style.color = "green";
+      } else if (total >= 10) {
+        school.textContent = "🏫"; // متوسط
+        school.style.color = "orange";
+      } else {
+        school.textContent = "🏫"; // ضعيف
+        school.style.color = "red";
+      }
+    }
+  </script>
+</body>
+</html>
