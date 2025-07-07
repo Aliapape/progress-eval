@@ -7,58 +7,118 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      padding: 20px;
-      max-width: 600px;
-      margin: auto;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      height: 100vh;
+    }
+    .container {
+      display: flex;
+      width: 100%;
+    }
+    .form-section {
+      flex: 1;
+      padding: 30px;
+      background-color: #f4f4f4;
+      box-shadow: inset -1px 0 0 #ccc;
+      overflow-y: auto;
+    }
+    .progress-section {
+      flex: 1;
+      padding: 30px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
     }
     .section {
+      background-color: #fff;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+    }
+    .section h3 {
+      margin-top: 0;
+      color: #333;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    .progress-bar-container {
+      width: 100%;
+      max-width: 400px;
+      background-color: #ddd;
+      border-radius: 30px;
+      overflow: hidden;
       margin-bottom: 20px;
     }
-    .result {
-      font-size: 1.5em;
-      font-weight: bold;
-      margin-top: 20px;
-    }
-    .school {
-      font-size: 60px;
+    .progress-bar {
+      height: 40px;
+      width: 0;
+      background-color: red;
       text-align: center;
-      margin-top: 20px;
+      line-height: 40px;
+      color: white;
+      font-weight: bold;
+      transition: width 0.5s ease;
+    }
+    .result-text {
+      font-size: 24px;
+      font-weight: bold;
     }
   </style>
 </head>
 <body>
-  <h2>Progress Evaluation Tool</h2>
-  <form id="evaluationForm">
-    <div class="section">
-      <label>المرحلة الأولى:</label><br>
-      <label><input type="radio" name="step1" value="5" required> نعم</label>
-      <label><input type="radio" name="step1" value="1"> لا</label>
+  <div class="container">
+    <div class="form-section">
+      <h2>أداة تقييم تقدم العمل</h2>
+      <form id="evaluationForm">
+        <div class="section">
+          <h3>المرحلة الأولى</h3>
+          <label><input type="radio" name="step1" value="5" required> نعم</label>
+          <label><input type="radio" name="step1" value="1"> لا</label>
+        </div>
+
+        <div class="section">
+          <h3>المرحلة الثانية (نسبة الإنجاز)</h3>
+          <label><input type="radio" name="step2" value="1" required> أقل من 50%</label><br>
+          <label><input type="radio" name="step2" value="3"> 70%</label><br>
+          <label><input type="radio" name="step2" value="5"> 100%</label>
+        </div>
+
+        <div class="section">
+          <h3>المرحلة الثالثة</h3>
+          <label><input type="radio" name="step3" value="5" required> نعم</label>
+          <label><input type="radio" name="step3" value="1"> لا</label>
+        </div>
+
+        <div class="section">
+          <h3>المرحلة الرابعة</h3>
+          <label><input type="radio" name="step4" value="5" required> نعم</label>
+          <label><input type="radio" name="step4" value="1"> لا</label>
+        </div>
+
+        <button type="button" onclick="calculateScore()">احسب النتيجة</button>
+      </form>
     </div>
 
-    <div class="section">
-      <label>المرحلة الثانية (نسبة الإنجاز):</label><br>
-      <label><input type="radio" name="step2" value="1" required> أقل من 50%</label><br>
-      <label><input type="radio" name="step2" value="3"> 70%</label><br>
-      <label><input type="radio" name="step2" value="5"> 100%</label>
+    <div class="progress-section">
+      <div class="progress-bar-container">
+        <div id="progressBar" class="progress-bar">0%</div>
+      </div>
+      <div id="result" class="result-text">النتيجة: 0 من 20</div>
     </div>
-
-    <div class="section">
-      <label>المرحلة الثالثة:</label><br>
-      <label><input type="radio" name="step3" value="5" required> نعم</label>
-      <label><input type="radio" name="step3" value="1"> لا</label>
-    </div>
-
-    <div class="section">
-      <label>المرحلة الرابعة:</label><br>
-      <label><input type="radio" name="step4" value="5" required> نعم</label>
-      <label><input type="radio" name="step4" value="1"> لا</label>
-    </div>
-
-    <button type="button" onclick="calculateScore()">احسب النتيجة</button>
-  </form>
-
-  <div id="result" class="result"></div>
-  <div id="school" class="school"></div>
+  </div>
 
   <script>
     function calculateScore() {
@@ -67,19 +127,21 @@
         return sum + parseInt(form[name].value);
       }, 0);
 
-      document.getElementById("result").textContent = `النتيجة: ${total} من 20`;
+      const percent = Math.round((total / 20) * 100);
+      const progressBar = document.getElementById("progressBar");
+      progressBar.style.width = percent + "%";
+      progressBar.textContent = percent + "%";
 
-      const school = document.getElementById("school");
-      if (total >= 16) {
-        school.textContent = "🏫"; // ممتاز
-        school.style.color = "green";
-      } else if (total >= 10) {
-        school.textContent = "🏫"; // متوسط
-        school.style.color = "orange";
+      // تغيير اللون حسب النتيجة
+      if (percent < 40) {
+        progressBar.style.backgroundColor = "red";
+      } else if (percent < 80) {
+        progressBar.style.backgroundColor = "orange";
       } else {
-        school.textContent = "🏫"; // ضعيف
-        school.style.color = "red";
+        progressBar.style.backgroundColor = "green";
       }
+
+      document.getElementById("result").textContent = `النتيجة: ${total} من 20`;
     }
   </script>
 </body>
