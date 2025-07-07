@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Progress Evaluation Tool</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -64,6 +65,20 @@
       font-size: 24px;
       font-weight: bold;
     }
+    .button-group {
+      margin-top: 20px;
+      display: flex;
+      gap: 15px;
+    }
+    button {
+      padding: 10px 15px;
+      font-size: 16px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .reset-btn { background-color: #dc3545; color: white; }
+    .pdf-btn { background-color: #28a745; color: white; }
   </style>
 </head>
 <body>
@@ -96,6 +111,11 @@
           <label><input type="radio" name="step4" value="1" onchange="calculateScore()"> لا</label>
         </div>
       </form>
+
+      <div class="button-group">
+        <button class="reset-btn" onclick="resetForm()">إعادة التقييم</button>
+        <button class="pdf-btn" onclick="downloadPDF()">تحميل النتيجة PDF</button>
+      </div>
     </div>
 
     <div class="progress-section">
@@ -130,6 +150,43 @@
       }
 
       document.getElementById("result").textContent = `النتيجة: ${total} من 20`;
+    }
+
+    function resetForm() {
+      document.getElementById("evaluationForm").reset();
+      document.getElementById("progressBar").style.width = "0%";
+      document.getElementById("progressBar").textContent = "0%";
+      document.getElementById("progressBar").style.backgroundColor = "red";
+      document.getElementById("result").textContent = "النتيجة: 0 من 20";
+    }
+
+    async function downloadPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      const form = document.forms["evaluationForm"];
+
+      doc.setFontSize(16);
+      doc.text("نتيجة تقييم تقدم العمل", 20, 20);
+
+      let y = 30;
+      const questions = [
+        { name: "المرحلة الأولى", field: "step1" },
+        { name: "المرحلة الثانية (نسبة الإنجاز)", field: "step2" },
+        { name: "المرحلة الثالثة", field: "step3" },
+        { name: "المرحلة الرابعة", field: "step4" },
+      ];
+
+      questions.forEach(q => {
+        const selected = form[q.field].value;
+        const label = form[q.field].parentElement.innerText;
+        doc.text(`${q.name}: ${selected ? selected : "لم يتم الاختيار"}`, 20, y);
+        y += 10;
+      });
+
+      const resultText = document.getElementById("result").textContent;
+      doc.text(resultText, 20, y + 10);
+
+      doc.save("تقرير_التقييم.pdf");
     }
   </script>
 </body>
